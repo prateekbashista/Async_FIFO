@@ -1,5 +1,6 @@
 
 
+// Synchroniser for Clock Domain Crossing
 module synchroniser
 #( 
     parameter integer WIDTH = 8;
@@ -9,7 +10,7 @@ module synchroniser
     input aresetn,
     input [WIDTH - 1 : 0] data,
     output logic [WIDTH - 1 : 0] q_data,
-)
+);
 
     reg [WIDTH - 1 : 0] q1, q2;
 
@@ -29,7 +30,17 @@ module synchroniser
 endmodule
 
 
+// Binary to Gray Converter
+module b2g_conv
+#( 
+    parameter integer WIDTH = 8;
+)
+(   input [WIDTH - 1 : 0] data_in,
+    output logic [WIDTH - 1 : 0] data_out
+);
 
+    
+endmodule
 
 
 
