@@ -35,7 +35,7 @@ initial begin
     #70ns   aresetn = 1;
 
     for(i = 0; i < 9; i = i+1) begin
-        #70ns   wdata = i+2; w_enable = 1'b1;
+        #70ns   wdata = $urandom; w_enable = 1'b1;
         #70ns    wdata = 8'h0; w_enable = 1'b0;
     end
 
@@ -46,13 +46,13 @@ initial begin
 
 
     for(i = 0; i < 9; i = i+1) begin
-        #70ns   wdata = 8'hEE; w_enable = 1'b1;
+        #70ns   wdata = $urandom; w_enable = 1'b1;
         #70ns    wdata = 8'h0; w_enable = 1'b0;
     end
 
     #20ns   r_enable = 1'b1;
     #20ns   r_enable = 1'b0;
-    #70ns   wdata = 8'hEE; w_enable = 1'b1;
+    #70ns   wdata = $urandom; w_enable = 1'b1;
     #70ns    wdata = 8'h0; w_enable = 1'b0;
 
 end
