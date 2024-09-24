@@ -44,6 +44,17 @@ initial begin
         #20ns   r_enable = 1'b0;
     end
 
+
+    for(i = 0; i < 9; i = i+1) begin
+        #70ns   wdata = 8'hEE; w_enable = 1'b1;
+        #70ns    wdata = 8'h0; w_enable = 1'b0;
+    end
+
+    #20ns   r_enable = 1'b1;
+    #20ns   r_enable = 1'b0;
+    #70ns   wdata = 8'hEE; w_enable = 1'b1;
+    #70ns    wdata = 8'h0; w_enable = 1'b0;
+
 end
 
 ASYNC_FIFO
