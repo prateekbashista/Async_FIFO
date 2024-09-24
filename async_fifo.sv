@@ -1,14 +1,15 @@
+`timescale 1ps/1ps
 
 // Synchroniser for Clock Domain Crossing
 module two_FF_sync
 #( 
-    parameter integer WIDTH = 8;
+    parameter integer WIDTH = 8
 )
 ( 
     input clk,
     input aresetn,
     input [WIDTH : 0] data,
-    output logic [WIDTH : 0] q_data,
+    output logic [WIDTH : 0] q_data
 );
 
     reg [WIDTH - 1 : 0] q1, q2;
@@ -32,7 +33,7 @@ endmodule
 // Binary to Gray Converter
 module b2g_conv
 #( 
-    parameter integer WIDTH = 8;
+    parameter integer WIDTH = 8
 )
 (   input [WIDTH : 0] data_in,
     output logic [WIDTH : 0] data_out
@@ -45,18 +46,18 @@ endmodule
 // Gray to Binary Converter
 module g2b_conv
 #( 
-    parameter integer WIDTH = 8;
+    parameter integer WIDTH = 8
 )
 ( 
     input [WIDTH : 0] data_in, 
     output logic [WIDTH : 0] data_out
-)
+);
 
     integer i;
 
     always_comb begin
         for(i = 0; i<WIDTH; i = i+1) begin
-            data_out[i]  = ^(gray >> i);
+            data_out[i]  = ^(data_in >> i);
         end
     end
 
@@ -103,7 +104,7 @@ module ASYNC_FIFO
             wptr <= 0;
             gray_wptr <= 0;
         end
-        else if begin
+        else begin
             wptr <= next_wptr;
             gray_wptr <= next_gray_wptr;
         end
@@ -147,7 +148,7 @@ module ASYNC_FIFO
     assign next_rptr = rptr + (r_enable && !empty);
 
     // binary to gray conversion
-    b2g_conv #($clog2(DEPTH)) b1(next_rptr, next_gray_rptr);
+    b2g_conv #($clog2(DEPTH)) b2(next_rptr, next_gray_rptr);
 
     // Synchroniser for CDC
     logic [$clog2(DEPTH) : 0] sync_gray_rptr; // synchronised gray pointer
@@ -162,7 +163,7 @@ module ASYNC_FIFO
     logic next_full, next_empty;
 
     // full 
-    always_ff @(posedge clk or negedge aresetn) begin
+    always_ff @(posedge w_clk or negedge aresetn) begin
         if(!aresetn) begin
             full <= 0;
         end
@@ -172,7 +173,7 @@ module ASYNC_FIFO
     end
 
     //empty
-    always_ff @(posedge clk or negedge aresetn) begin
+    always_ff @(posedge r_clk or negedge aresetn) begin
         if(!aresetn) begin 
             empty <= 1;
         end
@@ -186,13 +187,15 @@ module ASYNC_FIFO
     assign next_empty  = (sync_gray_wptr == next_gray_rptr);
 
     // full condition
-    // 
+    assign next_full = (next_gray_wptr == {~sync_gray_rptr[$clog2(DEPTH) : $clog2(DEPTH) -1],
+                                            sync_gray_rptr[$clog2(DEPTH) - 2 : 0]});
 
     //===============================================================
     
 
     //=================== Fifo Mem access ===========================
 
+    integer i;
     always_ff @(posedge w_clk or negedge aresetn) begin
         if(!aresetn) begin
             for(i = 0; i<DEPTH; i = i+1) begin
@@ -205,8 +208,11 @@ module ASYNC_FIFO
 
     end
 
-    always_ff @(posedge r_clk) begin // It introduces a cycle delay as request is serviced the next cycle
-        if(r_enable && !empty) begin
+    always_ff @(posedge r_clk or negedge aresetn) begin // It introduces a cycle delay as request is serviced the next cycle
+        if(!aresetn) begin
+            r_data <= 0;
+        end
+        else if(r_enable) begin
             r_data <= fifo_mem[rptr[$clog2(DEPTH) - 1 : 0]];
         end
     end
